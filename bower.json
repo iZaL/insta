@@ -1,0 +1,21 @@
+{
+  "name": "Insta App",
+  "version": "0.0.0",
+  "authors": [
+    "ZaL <z4ls@live.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": null,
+    "startbootstrap-sb-admin-2":null,
+    "select2": "~3.5.1"
+  }
+}
