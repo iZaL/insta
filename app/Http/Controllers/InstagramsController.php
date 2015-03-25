@@ -3,11 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateInstagram;
 use App\Src\Instagram\InstagramRepository;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
+use Vinkla\Instagram\InstagramManager;
 
 class InstagramsController extends Controller
 {
@@ -27,15 +25,19 @@ class InstagramsController extends Controller
      */
     private $instagramRepository;
 
+    protected $instagramManager;
+
     /**
      * Create a new controller instance.
      *
      * @param InstagramRepository $instagramRepository
+     * @param InstagramManager $instagram
      */
-    public function __construct(InstagramRepository $instagramRepository)
+    public function __construct(InstagramRepository $instagramRepository, InstagramManager $instagram)
     {
         $this->middleware('auth');
         $this->instagramRepository = $instagramRepository;
+        $this->instagramManager = $instagram;
     }
 
     /**
@@ -46,24 +48,38 @@ class InstagramsController extends Controller
     public function index()
     {
         $instagrams = $this->instagramRepository->model->all();
-        $clientID = $_ENV['INSTA_CLIENT_ID'];
-        $redirectURI = $_ENV['INSTA_REDIRECT_URI'];
+        $likes = [];
+        foreach ($instagrams as $instagram) {
+            if ($instagram->access_token) {
+                $this->setAccessToken($instagram->access_token);
+                $likes[$instagram->username] = $this->instagramManager->getUserLikes(100);
+            }
+        }
 
         return view('instagrams.index')->with([
             'instagrams' => $instagrams,
-            'clientID' => $clientID,
-            'redirectURI' => $redirectURI
+            'likes' => $likes
         ]);
     }
 
     public function show($id)
     {
         $instagram = $this->instagramRepository->model->find($id);
-        $likedUrl = $_ENV['INSTA_URL'] . '/users/self/media/liked?access_token=' . $_ENV['INSTA_ACCESS_TOKEN'];
-        $likedContents = json_decode(file_get_contents($likedUrl), true);
-        $likes = $likedContents['data'];
+        if (!$instagram->access_token) {
+            //@todo : show un authenticated version;
+            return Redirect::back()->withErrors('Please Authorize First');
+        }
+        $this->instagramManager->setAccessToken($instagram->access_token);
+        $instagramUser = $this->instagramManager->getUser();
+        $comments = $this->instagramManager->getMediaComments($instagram->access_token);
+        $medias = $this->instagramManager->getUserMedia($instagram->client_id, 10);
+        $likes = $this->instagramManager->getUserLikes(1000);
+        $feeds = $this->instagramManager->getUserFeed(10);
+        $follows = $this->instagramManager->getUserFollows();
+        $followers = $this->instagramManager->getUserFollower();
 
-        return view('instagrams.view', compact('instagram', 'likes'));
+        return view('instagrams.view',
+            compact('instagram', 'instagramUser', 'likes', 'feeds', 'follows', 'followers', 'medias', 'comments'));
     }
 
     public function create()
@@ -73,52 +89,43 @@ class InstagramsController extends Controller
 
     public function store(CreateInstagram $request)
     {
-        $json = file_get_contents($_ENV['INSTA_URL'] . '/users/search?q=' . $request->username . '/&client_id=' . $_ENV['INSTA_CLIENT_ID']);
-
-        $response = json_decode($json, true);
-
-        // If not valid Response
-        if (!$response['meta']['code'] === 200) {
-            return Redirect::back()->withErrors('Sorry, Cannot Process the Request, Please Make Sure You have Provided Correct Instagram Username');
+        // find the username
+        $foundUser = $this->instagramRepository->model->where('username', $request->username)->first();
+        if ($foundUser) {
+            return Redirect::back()->withErrors('User already exists');
         }
+
+        $response = $this->instagramManager->searchUser($request->username);
 
         // If bad request
-        if (!isset($response['data'][0])) {
-            return Redirect::back()->withErrors('Sorry, Bad Request');
+        if (!isset($response->data[0])) {
+            return Redirect::back()->withErrors('Sorry, Unkown User');
         }
-
-        $data = $response['data'][0];
-
+        $user = $response->data[0];
         $instagram = $this->instagramRepository->model->create($request->all());
-        $instagram->client_id = $data['id'];
-        $instagram->fullname = $data['full_name'];
+        $instagram->client_id = $user->id;
+        $instagram->fullname = $user->full_name;
         $instagram->save();
 
         return Redirect::home()->withSuccess('Instagram Account Added');
     }
 
-    public function authenticate($id)
+    public function authorize()
     {
-        $instagram = $this->instagramRepository->model->findOrFail($id);
-        $clientID = $_ENV['INSTA_CLIENT_ID'];
-        $redirectURI = $_ENV['INSTA_REDIRECT_URI'];
-        Session::put('CURRENT_INSTA_USER', $instagram->id);
+        $loginUrl =
+            $this->instagramManager->getLoginUrl([
+                'basic',
+                'likes',
+                'relationships',
+                'comments'
 
-        return view('instagrams.authenticate')->with([
-            'instagram' => $instagram,
-            'clientID' => $clientID,
-            'redirectURI' => $redirectURI
-        ]);
+            ]);
+        header('Location: ' . $loginUrl);
+        die();
     }
 
-    public function confirmAuthenticate(Request $request)
+    public function authenticate(Request $request)
     {
-        $id = Session::has('CURRENT_INSTA_USER') ? Session::get('CURRENT_INSTA_USER') : 1; //@todo : change 1 to null
-        Session::forget('CURRENT_INSTA_USER');
-        if (is_null($id)) {
-            // redirect
-            dd('wrong user');
-        }
         $code = $request->get('code');
 
         if (!isset($code) || empty($code)) {
@@ -126,10 +133,80 @@ class InstagramsController extends Controller
             dd('invalid access');
         }
 
+        $data = $this->instagramManager->getOAuthToken($code);
 
-        $instagram = $this->instagramRepository->model->findOrFail($id);
-        $instagram->access_token = Input::get('access_token');
-        dd(Input::all());
+        if (!$data->access_token) {
+            return Redirect::action('InstagramsController@index')->withErrors('Wrong Access');
+
+        }
+        $instagram = $this->instagramRepository->model->where('client_id', $data->user->id)->first();
+
+        if (!$instagram) {
+            // redirect
+            dd('wrong user');
+        }
+
+        $instagram->access_token = $data->access_token;
+
+        $instagram->save();
+
+        return Redirect::action('InstagramsController@index')->with('success', 'Authorized');
+    }
+
+    public function getUserInfoByUsername($username)
+    {
+        dd($this->instagramManager->searchUser($username));
+    }
+
+    public function getUserInfoByID($id)
+    {
+        dd($this->instagramManager->getUserMedia($id));
+    }
+
+    public function dislikeMedia($username, $mediaID, Request $request)
+    {
+        $user = $this->instagramRepository->getByUsername($username);
+        if (!$user->access_token) {
+            throw new \Exception('invalid access token');
+        }
+        $this->setAccessToken($user->access_token);
+        $this->instagramManager->deleteLikedMedia($mediaID);
+
+        if ($request->ajax()) {
+            return 'success';
+        }
+
+        return Redirect::back();
+    }
+
+    public function likeMedia($username, $mediaID, Request $request)
+    {
+        $user = $this->instagramRepository->getByUsername($username);
+        if (!$user->access_token) {
+            throw new \Exception('invalid access token');
+        }
+        $this->setAccessToken($user->access_token);
+        $this->instagramManager->likeMedia($mediaID);
+
+        if ($request->ajax()) {
+            return 'success';
+        }
+
+        return Redirect::back();
+    }
+
+    public function setAccessToken($token)
+    {
+        if (empty($token)) {
+            throw new \Exception('invalid token');
+        }
+
+        return $this->instagramManager->setAccessToken($token);
+    }
+
+    public function deleteAccessToken()
+    {
+        return $this->instagramManager->setAccessToken('');
     }
 
 }

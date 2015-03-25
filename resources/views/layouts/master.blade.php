@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Instagram</title>
 
     @section('style')
@@ -15,8 +16,11 @@
         <!-- Custom CSS -->
         <link href="/css/sb-admin-2.css" rel="stylesheet">
 
+        <link href="/css/custom.css" rel="stylesheet">
+
         <!-- Custom Fonts -->
         <link href="/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
     @show
 </head>
 
@@ -55,6 +59,7 @@
 
     <!-- Custom Theme JavaScript -->
     <script src="/js/sb-admin-2.js"></script>
+    <script src="/js/instagrams.js"></script>
 @show
 
 </body>

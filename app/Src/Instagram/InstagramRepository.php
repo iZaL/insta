@@ -13,4 +13,9 @@ class InstagramRepository extends BaseRepository
         $this->model = $model;
     }
 
+    public function getByUsername($username)
+    {
+        return $this->model->where('username',$username)->firstOrFail();
+    }
+
 }

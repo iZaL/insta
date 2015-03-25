@@ -16,7 +16,7 @@ class CreateInstagramsTable extends Migration {
 		{
             $table->increments('id');
             $table->integer('client_id');
-            $table->integer('access_token');
+            $table->string('access_token');
             $table->string('username');
             $table->string('fullname');
             $table->softDeletes();

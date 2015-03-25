@@ -1,0 +1,33 @@
+.p-bottom10 {
+    padding-bottom: 10px;
+}
+.p-bottom20 {
+    padding-bottom: 20px;
+}
+.text-center {
+    text-align: center;
+}
+
+.top-button{
+    display: block;
+    position: absolute;
+    width:30px;
+    height:30px;
+    top: -10px;
+    right: -2px;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+.green {
+    color:#2ca02c;
+    font-weight: bold;
+}
+
+.red {
+    color:#843534;
+    font-weight: bold;
+}
+.white {
+    color:#ffffff;
+    font-weight: bold;
+}
