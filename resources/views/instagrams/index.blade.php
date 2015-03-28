@@ -17,6 +17,12 @@
                 $('#logout').html(html);
                 $('#logout').fadeOut();
             });
+            $('.load-more').click(function(e){
+                e.preventDefault();
+                var username = $(this).data('username');
+                var nextUrl = $(this).data('next-url');
+                alert(nextUrl);
+            });
         });
     </script>
 @endsection
@@ -80,10 +86,18 @@
                                 @endif
                             @endforeach
                         </div>
+                        <div class="panelf-footer text-center p-bottom10">
+                            <div class="btn btn-primary load-more text-center" data-username="{{$username}}"
+                                 data-next-url="{{$like->pagination->next_url}}">
+                                load more
+                            </div>
+                        </div>
                     </div>
-                    @endif
-
-                    @endforeach
                 </div>
+            @endif
+
+        @endforeach
+
+    </div>
 
 @endsection

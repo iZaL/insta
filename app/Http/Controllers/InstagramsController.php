@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateInstagram;
+use App\Src\Instagram\InstagramDecorator;
 use App\Src\Instagram\InstagramRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -33,7 +34,7 @@ class InstagramsController extends Controller
      * @param InstagramRepository $instagramRepository
      * @param InstagramManager $instagram
      */
-    public function __construct(InstagramRepository $instagramRepository, InstagramManager $instagram)
+    public function __construct(InstagramRepository $instagramRepository, InstagramDecorator $instagram)
     {
         $this->middleware('auth');
         $this->instagramRepository = $instagramRepository;
@@ -52,7 +53,7 @@ class InstagramsController extends Controller
         foreach ($instagrams as $instagram) {
             if ($instagram->access_token) {
                 $this->setAccessToken($instagram->access_token);
-                $likes[$instagram->username] = $this->instagramManager->getUserLikes(100);
+                $likes[$instagram->username] = $this->instagramManager->likePagination($this->instagramManager->getUserLikes(100));
             }
         }
 
@@ -160,7 +161,8 @@ class InstagramsController extends Controller
 
     public function getUserInfoByID($id)
     {
-        dd($this->instagramManager->getUserMedia($id));
+//        1097866395
+        dd($this->instagramManager->getUserMedia('1097866395'));
     }
 
     public function dislikeMedia($username, $mediaID, Request $request)
@@ -209,4 +211,9 @@ class InstagramsController extends Controller
         return $this->instagramManager->setAccessToken('');
     }
 
+    public function loadMore($url)
+    {
+        $response = file_get_contents($url);
+
+    }
 }
