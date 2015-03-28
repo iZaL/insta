@@ -27,15 +27,28 @@
 
 @section('content')
     @if($instagramUser->data)
-        <div class="col-md-3">
-            <img src="{{ $instagramUser->data->profile_picture }}" class="img-thumbnail img-responsive">
+        <div class="col-md-4">
+            <div class="row text-center">
+                <div class="col-md-6">
+                    <img src="{{ $instagramUser->data->profile_picture }}" class="img-thumbnail img-responsive">
+                </div>
+                <div class="col-md-6">
+                    <h1 style="text-align: center; vertical-align: middle">{{ $instagramUser->data->full_name }}</h1>
+                </div>
+            </div>
 
-            <h1 style="text-align: center">{{ $instagramUser->data->full_name }}</h1>
-            <h4 style="text-align: center">Follows {{ count($follows->data) }}</h4>
-            <h4 style="text-align: center">Followers {{ count($followers->data) }}</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 style="text-align: center">FOLLOWINGS {{ count($follows->data) }}</h4>
+                </div>
+                <div class="col-md-6">
+                    <h4 style="text-align: center">FOLLOWERS {{ count($followers->data) }}</h4>
+                </div>
+            </div>
+
         </div>
     @endif
-    <div class="col-md-9">
+    <div class="col-md-8">
         <div class="row">
             <div class="panel panel-primary">
                 <div class="panel-heading">
