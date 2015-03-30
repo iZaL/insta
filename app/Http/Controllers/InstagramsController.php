@@ -2,9 +2,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateInstagram;
-use App\Src\Instagram\InstagramDecorator;
 use App\Src\Instagram\InstagramRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
 use Vinkla\Instagram\InstagramManager;
 
@@ -34,7 +34,7 @@ class InstagramsController extends Controller
      * @param InstagramRepository $instagramRepository
      * @param InstagramManager $instagram
      */
-    public function __construct(InstagramRepository $instagramRepository, InstagramDecorator $instagram)
+    public function __construct(InstagramRepository $instagramRepository, InstagramManager $instagram)
     {
         $this->middleware('auth');
         $this->instagramRepository = $instagramRepository;
@@ -53,7 +53,8 @@ class InstagramsController extends Controller
         foreach ($instagrams as $instagram) {
             if ($instagram->access_token) {
                 $this->setAccessToken($instagram->access_token);
-                $likes[$instagram->username] = $this->instagramManager->likePagination($this->instagramManager->getUserLikes(100));
+//                $likes[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(20),20);
+//                $likes[$instagram->username] = $this->instagramManager->getUserLikes(50);
             }
         }
 
@@ -211,9 +212,68 @@ class InstagramsController extends Controller
         return $this->instagramManager->setAccessToken('');
     }
 
-    public function loadMore($url)
+    public function getAll()
     {
-        $response = file_get_contents($url);
 
     }
+
+    public function loadMore()
+    {
+        $accounts = [];
+        $response = [];
+
+        $instagrams = $this->instagramRepository->model->all();
+
+        foreach ($instagrams as $instagram) {
+            if ($instagram->access_token) {
+                $this->setAccessToken($instagram->access_token);
+                $accounts[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(),
+                    50);
+            }
+        }
+
+        foreach ($accounts as $username => $account) {
+            $response[$username]['pagination'] = $account->pagination->next_max_like_id;
+            $response[$username]['username'] = $username;
+            foreach ($account->data as $data) {
+                $response[$username]['images'][] = [
+                    'id' => $data->id,
+                    'url' => $data->images->thumbnail->url,
+                    'user' => $data->user->username
+                ];
+            }
+
+        }
+
+        return $response;
+    }
+
+    public function loadLike(Request $request)
+    {
+        $response = [];
+
+        $username = $request->get('username');
+        $instagram = $this->instagramRepository->getByUsername($username);
+
+        if ($instagram->access_token) {
+            $url = 'https://api.instagram.com/v1/users/self/media/liked?access_token=' . $instagram->access_token;
+            $url .= '&max_like_id=' . $request->get('pagination');
+            $url .= '&count=50';
+            $data = file_get_contents($url);
+            $account = json_decode($data);
+        }
+
+        $response['pagination'] = isset($account->pagination->next_max_like_id) ?: null;
+        $response['username'] = $username;
+        foreach ($account->data as $data) {
+            $response['images'][] = [
+                'id' => $data->id,
+                'url' => $data->images->thumbnail->url,
+                'user' => $data->user->username
+            ];
+        }
+
+        return $response;
+    }
+
 }

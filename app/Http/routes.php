@@ -10,6 +10,8 @@ Route::get('instagrams/usearch/{username}', 'InstagramsController@getUserInfoByU
 Route::get('instagrams/isearch/{id}', 'InstagramsController@getUserInfoByID');
 Route::get('instagrams/dislike-media/{username}/{mediaID}', 'InstagramsController@dislikeMedia');
 Route::get('instagrams/like-media/{username}/{mediaID}', 'InstagramsController@likeMedia');
+Route::get('instagrams/loadmore', 'InstagramsController@loadMore');
+Route::get('instagrams/loadlike', 'InstagramsController@loadLike');
 Route::resource('instagrams', 'InstagramsController');
 
 Route::controllers([
@@ -18,3 +20,4 @@ Route::controllers([
 ]);
 
 Route::get('/', 'InstagramsController@index');
+Route::get('test', 'InstagramsController@loadMore');
