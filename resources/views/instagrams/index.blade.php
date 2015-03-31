@@ -59,7 +59,6 @@
                                     '<i class="fa fa-1x fa-close"></i> </a>' +
                                     '</div>' +
                                     '</div>';
-
                         });
                         template +=
                                 '</div>' +
