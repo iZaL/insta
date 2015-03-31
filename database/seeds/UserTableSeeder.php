@@ -15,7 +15,7 @@ class UserTableSeeder extends Seeder {
     {
         User::create([
             'name' => 'Mubarak',
-            'email' => 'mubarakesmail@gmail.com',
+            'email' => 'mubarakesmail2@gmail.com',
             'password' => Hash::make('instapassword'),
             'active' => 1
         ]);
