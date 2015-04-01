@@ -209,11 +209,6 @@ class InstagramsController extends Controller
         return $this->instagramManager->setAccessToken('');
     }
 
-    public function getAll()
-    {
-
-    }
-
     public function loadMore()
     {
         $accounts = [];

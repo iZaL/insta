@@ -35,9 +35,9 @@
         loadAllLikes();
 
         function loadAllLikes() {
-            $('#instagram-likes').html(
-                    '<div class="loader"></div>'
-            );
+//            $('#instagram-likes').html(
+//                    '<div class="loader"></div>'
+//            );
             $.ajax({
                 type: "GET",
                 url: "/instagrams/loadmore",
@@ -45,11 +45,12 @@
                 success: function (response) {
                     var template = '';
                     $.each(response, function (i, account) {
+                        var filteredUsername = account.username.replace('.','-');
                         template +=
                                 '<div class="col-md-6 text-center">' +
                                 '<div class="panel panel-primary ">' +
                                 '<div class="panel-heading">' + account.username + '</div>' +
-                                '<div id="like-' + account.username + '" class="panel-body">';
+                                '<div id="like-' + filteredUsername + '" class="panel-body">';
                         $.each(account.images, function (i, media) {
                             template +=
                                     '<div id="div-like-' + media.id + '">' +
@@ -67,12 +68,12 @@
                         template +=
                                 '</div>' +
                                 '<div class="modal-footer">' +
-                                '<div id="load-more-' + account.username + '" class="btn btn-primary text-center load-more" data-username="' + account.username + '"' +
+                                '<div id="load-more-' + filteredUsername + '" class="btn btn-primary text-center load-more" data-username="' + account.username + '"' +
                                 'data-pagination="' + account.pagination + '">load more</div>' +
                                 '</div>' +
                                 '</div>' +
                                 '</div>';
-                        var moreDiv = $('#load-more-' + account.username);
+                        var moreDiv = $('#load-more-' + filteredUsername);
                         if (account.pagination === undefined || account.pagination === null) {
                             $(moreDiv).html('No More Images');
                         } else {
@@ -101,10 +102,10 @@
             $.ajax({
                 type: "GET",
                 url: "/instagrams/loadlike",
-                data: null,
                 data: params,
                 success: function (account) {
-                    var mediaDiv = $('#like-' + account.username);
+                    var filteredUsername = account.username.replace('.','-');
+                    var mediaDiv = $('#like-' + filteredUsername);
                     var moreDiv = $('#load-more-' + account.username);
 
                     if (account.images) {
