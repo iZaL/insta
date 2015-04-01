@@ -223,8 +223,7 @@ class InstagramsController extends Controller
         foreach ($instagrams as $instagram) {
             if ($instagram->access_token) {
                 $this->setAccessToken($instagram->access_token);
-                $accounts[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(),
-                    33);
+                $accounts[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes());
             }
         }
 
