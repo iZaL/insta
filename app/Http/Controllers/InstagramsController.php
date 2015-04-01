@@ -23,7 +23,7 @@ class InstagramsController extends Controller
     /**
      * @var InstagramRepository
      */
-    private $instagramRepository;
+    protected $instagramRepository;
 
     protected $instagramManager;
 
@@ -52,8 +52,6 @@ class InstagramsController extends Controller
         foreach ($instagrams as $instagram) {
             if ($instagram->access_token) {
                 $this->setAccessToken($instagram->access_token);
-//                $likes[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(20),20);
-//                $likes[$instagram->username] = $this->instagramManager->getUserLikes(50);
             }
         }
 
@@ -220,14 +218,13 @@ class InstagramsController extends Controller
     {
         $accounts = [];
         $response = [];
-
         $instagrams = $this->instagramRepository->model->all();
 
         foreach ($instagrams as $instagram) {
             if ($instagram->access_token) {
                 $this->setAccessToken($instagram->access_token);
                 $accounts[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(),
-                    50);
+                    33);
             }
         }
 
@@ -250,26 +247,29 @@ class InstagramsController extends Controller
     public function loadLike(Request $request)
     {
         $response = [];
-
         $username = $request->get('username');
         $instagram = $this->instagramRepository->getByUsername($username);
-
-        if ($instagram->access_token) {
-            $url = 'https://api.instagram.com/v1/users/self/media/liked?access_token=' . $instagram->access_token;
-            $url .= '&max_like_id=' . $request->get('pagination');
-            $url .= '&count=50';
-            $data = file_get_contents($url);
-            $account = json_decode($data);
-        }
-
-        $response['pagination'] = isset($account->pagination->next_max_like_id) ?: null;
         $response['username'] = $username;
-        foreach ($account->data as $data) {
-            $response['images'][] = [
-                'id' => $data->id,
-                'url' => $data->images->thumbnail->url,
-                'user' => $data->user->username
-            ];
+
+        if (trim(!(empty($request->pagination)) || !(is_null($request->pagination)) || !(isset($request->pagination)) || !($request->pagination == ''))) {
+            if ($instagram->access_token) {
+                $url = 'https://api.instagram.com/v1/users/self/media/liked?access_token=' . $instagram->access_token;
+                $url .= '&max_like_id=' . $request->get('pagination');
+                $url .= '&count=33';
+                $data = file_get_contents($url);
+                $account = json_decode($data);
+            }
+            $response['pagination'] = isset($account->pagination->next_max_like_id) ? $account->pagination->next_max_like_id : null;
+            foreach ($account->data as $data) {
+                $response['images'][] = [
+                    'id' => $data->id,
+                    'url' => $data->images->thumbnail->url,
+                    'user' => $data->user->username
+                ];
+            }
+        } else {
+            $response['image'] = null;
+            $response['pagination'] = null;
         }
 
         return $response;

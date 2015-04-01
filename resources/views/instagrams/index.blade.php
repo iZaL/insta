@@ -20,11 +20,12 @@
             });
 
             $(document).on('click', '.load-more', function (e) {
+                $(this).html('loading...');
                 e.preventDefault();
                 var username = $(this).data('username');
                 var pagination = $(this).data('pagination');
 
-                loadLikes(username,pagination);
+                loadLikes(username, pagination);
 //                loadLikes('zals88','1427710485934');
             });
 
@@ -34,6 +35,9 @@
         loadAllLikes();
 
         function loadAllLikes() {
+            $('#instagram-likes').html(
+                    '<div class="loader"></div>'
+            );
             $.ajax({
                 type: "GET",
                 url: "/instagrams/loadmore",
@@ -63,20 +67,21 @@
                         template +=
                                 '</div>' +
                                 '<div class="modal-footer">' +
-                                    '<div id="load-more-'+account.username+'" class="btn btn-primary text-center load-more" data-username="'+account.username+'"'+
-                                        'data-pagination="'+account.pagination+'">load more</div>' +
-                                '</div>'+
-                        '</div>' +
-                        '</div>';
-                        var moreDiv = $('#load-more-'+account.username);
-                        if(account.pagination === undefined || account.pagination === null) {
+                                '<div id="load-more-' + account.username + '" class="btn btn-primary text-center load-more" data-username="' + account.username + '"' +
+                                'data-pagination="' + account.pagination + '">load more</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>';
+                        var moreDiv = $('#load-more-' + account.username);
+                        if (account.pagination === undefined || account.pagination === null) {
                             $(moreDiv).html('No More Images');
                         } else {
+                            $(moreDiv).html('load more');
                             $(moreDiv).data('pagination', account.pagination);
                         }
                     });
 
-                    $('#instagram-likes').append(template);
+                    $('#instagram-likes').html(template);
                 },
                 error: function () {
                     //
@@ -85,48 +90,54 @@
             });
         }
 
-        function loadLikes(username,pagination) {
+        function loadLikes(username, pagination) {
             var username = username;
             var pagination = pagination;
             var params = {
-                "username":username,
-                "pagination":pagination
+                "username": username,
+                "pagination": pagination
             };
+
             $.ajax({
                 type: "GET",
                 url: "/instagrams/loadlike",
                 data: null,
-                data:params,
+                data: params,
                 success: function (account) {
+                    var mediaDiv = $('#like-' + account.username);
+                    var moreDiv = $('#load-more-' + account.username);
 
-                    var mediaTemplate = '';
-                    $.each(account.images, function (i, media) {
-                        mediaTemplate +=
-                                '<div id="div-like-' + media.id + '">' +
-                                '<div class="col-md-4 p-bottom10">' +
-                                '<a href="' + media.url + '" target="_blank">' +
-                                '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
-                                '</a>' +
-                                '<a class="top-button delete-like red" data-username="' + account.username + '"' +
-                                'data-media="' + media.id + '"' +
-                                'href="#" data-toggle="tooltip" data-placement="top" title="Delete">' +
-                                '<i class="fa fa-1x fa-close"></i> </a>' +
-                                '</div>' +
-                                '</div>';
-                    });
+                    if (account.images) {
+                        var mediaTemplate = '';
+                        $.each(account.images, function (i, media) {
+                            mediaTemplate +=
+                                    '<div id="div-like-' + media.id + '">' +
+                                    '<div class="col-md-4 p-bottom10">' +
+                                    '<a href="' + media.url + '" target="_blank">' +
+                                    '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
+                                    '</a>' +
+                                    '<a class="top-button delete-like red" data-username="' + account.username + '"' +
+                                    'data-media="' + media.id + '"' +
+                                    'href="#" data-toggle="tooltip" data-placement="top" title="Delete">' +
+                                    '<i class="fa fa-1x fa-close"></i> </a>' +
+                                    '</div>' +
+                                    '</div>';
+                        });
 
-                    // update pagination max like id
-                    var moreDiv = $('#load-more-'+account.username);
-
-                    if(account.pagination === undefined || account.pagination === null) {
-                        $(moreDiv).html('No More Images');
+                        // update pagination max like id
+                        if(account.pagination) {
+                            $(moreDiv).data('pagination', account.pagination);
+                            $(moreDiv).html('load more');
+                        } else {
+                            $(moreDiv).data('pagination', null);
+                            $(moreDiv).html('No More Data');
+                        }
+                        $(mediaDiv).append(mediaTemplate);
+                        // update div with new images
                     } else {
-                        $(moreDiv).data('pagination', account.pagination);
+                        $(moreDiv).data('pagination', null);
+                        $(moreDiv).html('No More Data');
                     }
-
-                    // update div with new images
-                    var mediaDiv = $('#like-'+account.username);
-                    $(mediaDiv).append(mediaTemplate);
 
                 },
                 error: function () {
