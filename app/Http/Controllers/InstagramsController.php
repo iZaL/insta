@@ -229,8 +229,7 @@ class InstagramsController extends Controller
         }
 
         foreach ($accounts as $username => $account) {
-            dd($account->pagination);
-            if ($account->pagination) {
+            if (!empty($account->pagination)) {
                 $response[$username]['pagination'] = $account->pagination->next_max_like_id;
                 $response[$username]['username'] = $username;
                 foreach ($account->data as $data) {
