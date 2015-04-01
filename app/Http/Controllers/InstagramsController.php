@@ -218,7 +218,7 @@ class InstagramsController extends Controller
         foreach ($instagrams as $instagram) {
             if ($instagram->access_token) {
                 $this->setAccessToken($instagram->access_token);
-                $accounts[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(),30);
+                $accounts[$instagram->username] = $this->instagramManager->pagination($this->instagramManager->getUserLikes(),20);
             }
         }
 
@@ -250,7 +250,7 @@ class InstagramsController extends Controller
             if ($instagram->access_token) {
                 $url = 'https://api.instagram.com/v1/users/self/media/liked?access_token=' . $instagram->access_token;
                 $url .= '&max_like_id=' . $request->get('pagination');
-                $url .= '&count=30';
+                $url .= '&count=20';
                 $data = file_get_contents($url);
                 $account = json_decode($data);
             }
