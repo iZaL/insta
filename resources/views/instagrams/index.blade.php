@@ -106,7 +106,7 @@
                 success: function (account) {
                     var filteredUsername = account.username.replace('.','-');
                     var mediaDiv = $('#like-' + filteredUsername);
-                    var moreDiv = $('#load-more-' + account.username);
+                    var moreDiv = $('#load-more-' + filteredUsername);
 
                     if (account.images) {
                         var mediaTemplate = '';
