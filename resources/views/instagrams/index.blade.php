@@ -149,7 +149,6 @@
                         $(mediaDiv).append(mediaTemplate);
                         // update div with new images
                     } else {
-                        alert(filteredUsername);
                         $(moreDiv).data('pagination', null);
                         $(moreDiv).html('No More Data');
                     }
