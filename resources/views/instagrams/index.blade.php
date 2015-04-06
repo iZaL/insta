@@ -29,10 +29,21 @@
 //                loadLikes('zals88','1427710485934');
             });
 
+            $(document).on('click', '.load-media', function (e) {
+                $(this).html('loading...');
+                e.preventDefault();
+                var username = $(this).data('username');
+                var pagination = $(this).data('pagination');
+
+                loadMedias(username, pagination);
+//                loadLikes('zals88','1427710485934');
+            });
+
         });
 
 
         loadAllLikes();
+        loadAllMedias();
 
         function loadAllLikes() {
 //            $('#instagram-likes').html(
@@ -40,21 +51,22 @@
 //            );
             $.ajax({
                 type: "GET",
-                url: "/instagrams/loadmore",
+                url: "/instagrams/likes",
                 data: null,
                 success: function (response) {
                     var template = '';
                     $.each(response, function (i, account) {
-                        var filteredUsername = account.username.replace('.','-');
+//                        var filteredUsername = account.username.replace('.','-');
+                        var filteredUsername = account.username.replace(/\./g, '-'); // replaces all '.'
                         template +=
-                                '<div class="col-md-6 text-center">' +
+                                '<div class="col-md-12 text-center">' +
                                 '<div class="panel panel-primary ">' +
-                                '<div class="panel-heading">' + account.username + '</div>' +
+                                '<div class="panel-heading"> Likes For ' + account.username + '</div>' +
                                 '<div id="like-' + filteredUsername + '" class="panel-body">';
                         $.each(account.images, function (i, media) {
                             template +=
                                     '<div id="div-like-' + media.id + '">' +
-                                    '<div class="col-md-4 p-bottom10">' +
+                                    '<div class="col-md-6 p-bottom10">' +
                                     '<a href="' + media.url + '" target="_blank">' +
                                     '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
                                     '</a>' +
@@ -91,6 +103,7 @@
             });
         }
 
+
         function loadLikes(username, pagination) {
             var username = username;
             var pagination = pagination;
@@ -101,10 +114,11 @@
 
             $.ajax({
                 type: "GET",
-                url: "/instagrams/loadlike",
+                url: "/instagrams/like",
                 data: params,
                 success: function (account) {
-                    var filteredUsername = account.username.replace('.','-');
+//                    var filteredUsername = account.username.replace('.','-');
+                    var filteredUsername = account.username.replace(/\./g, '-'); // replaces all '.'
                     var mediaDiv = $('#like-' + filteredUsername);
                     var moreDiv = $('#load-more-' + filteredUsername);
 
@@ -113,7 +127,122 @@
                         $.each(account.images, function (i, media) {
                             mediaTemplate +=
                                     '<div id="div-like-' + media.id + '">' +
-                                    '<div class="col-md-4 p-bottom10">' +
+                                    '<div class="col-md-6 p-bottom10">' +
+                                    '<a href="' + media.url + '" target="_blank">' +
+                                    '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
+                                    '</a>' +
+                                    '<a class="top-button delete-like red" data-username="' + account.username + '"' +
+                                    'data-media="' + media.id + '"' +
+                                    'href="#" data-toggle="tooltip" data-placement="top" title="Delete">' +
+                                    '<i class="fa fa-1x fa-close"></i> </a>' +
+                                    '</div>' +
+                                    '</div>';
+                        });
+                        // update pagination max like id
+                        if(account.pagination) {
+                            $(moreDiv).data('pagination', account.pagination);
+                            $(moreDiv).html('load more');
+                        } else {
+                            $(moreDiv).data('pagination', null);
+                            $(moreDiv).html('No More Data');
+                        }
+                        $(mediaDiv).append(mediaTemplate);
+                        // update div with new images
+                    } else {
+                        alert(filteredUsername);
+                        $(moreDiv).data('pagination', null);
+                        $(moreDiv).html('No More Data');
+                    }
+
+                },
+                error: function () {
+                    //
+                }
+
+            });
+
+
+        }
+
+        function loadAllMedias() {
+
+            $.ajax({
+                type: "GET",
+                url: "/instagrams/medias",
+                data: null,
+                success: function (response) {
+                    var template = '';
+                    $.each(response, function (i, account) {
+                        var filteredUsername = account.username.replace(/\./g, '-'); // replaces all '.'
+
+                        template +=
+                                '<div class="col-md-12 text-center">' +
+                                '<div class="panel panel-primary ">' +
+                                '<div class="panel-heading"> Medias For ' + account.username + '</div>' +
+                                '<div id="media-' + filteredUsername + '" class="panel-body">';
+                        $.each(account.images, function (i, media) {
+                            template +=
+                                    '<div id="div-media-' + media.id + '">' +
+                                    '<div class="col-md-6 p-bottom10">' +
+                                    '<a href="' + media.url + '" target="_blank">' +
+                                    '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
+                                    '</a>' +
+                                    '<a class="top-button delete-media red" data-username="' + account.username + '"' +
+                                    'data-media="' + media.id + '"' +
+                                    'href="#" data-toggle="tooltip" data-placement="top" title="Delete">' +
+                                    '<i class="fa fa-1x fa-close"></i> </a>' +
+                                    '</div>' +
+                                    '</div>';
+                        });
+                        template +=
+                                '</div>' +
+                                '<div class="modal-footer">' +
+                                '<div id="load-media-' + filteredUsername + '" class="btn btn-primary text-center load-media" data-username="' + account.username + '"' +
+                                'data-pagination="' + account.pagination + '">load more</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>';
+                        var moreDiv = $('#load-media-' + filteredUsername);
+                        if (account.pagination === undefined || account.pagination === null) {
+                            $(moreDiv).html('No More Images');
+                        } else {
+                            $(moreDiv).html('load more');
+                            $(moreDiv).data('pagination', account.pagination);
+                        }
+                    });
+
+                    $('#instagram-medias').html(template);
+                },
+                error: function () {
+                    //
+                }
+
+            });
+        }
+
+        function loadMedias(username, pagination) {
+            var username = username;
+            var pagination = pagination;
+            var params = {
+                "username": username,
+                "pagination": pagination
+            };
+
+            $.ajax({
+                type: "GET",
+                url: "/instagrams/media",
+                data: params,
+                success: function (account) {
+                    var filteredUsername = account.username.replace(/\./g, '-'); // replaces all '.'
+                    var mediaDiv = $('#media-' + filteredUsername);
+                    var moreDiv = $('#load-media-' + filteredUsername);
+
+                    if (account.images) {
+                        var mediaTemplate = '';
+                        $.each(account.images, function (i, media) {
+                            mediaTemplate +=
+                                    '<div id="div-media-' + media.id + '">' +
+                                    '<div class="col-md-6 p-bottom10">' +
                                     '<a href="' + media.url + '" target="_blank">' +
                                     '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
                                     '</a>' +
@@ -146,6 +275,8 @@
                 }
 
             });
+
+
         }
 
 
@@ -184,8 +315,15 @@
     </div>
 
     <div class="row">
-        <div id="instagram-likes">
+        <div class="col-md-6">
+            <div id="instagram-likes">
 
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="instagram-medias">
+
+            </div>
         </div>
     </div>
 

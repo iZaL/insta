@@ -10,8 +10,12 @@ Route::get('instagrams/usearch/{username}', 'InstagramsController@getUserInfoByU
 Route::get('instagrams/isearch/{id}', 'InstagramsController@getUserInfoByID');
 Route::get('instagrams/dislike-media/{username}/{mediaID}', 'InstagramsController@dislikeMedia');
 Route::get('instagrams/like-media/{username}/{mediaID}', 'InstagramsController@likeMedia');
-Route::get('instagrams/loadmore', 'InstagramsController@loadMore');
-Route::get('instagrams/loadlike', 'InstagramsController@loadLike');
+Route::get('instagrams/likes', 'InstagramsController@getLikes');
+Route::get('instagrams/like', 'InstagramsController@getLike');
+
+Route::get('instagrams/medias', 'InstagramsController@getMedias');
+Route::get('instagrams/media', 'InstagramsController@getMedia');
+
 Route::resource('instagrams', 'InstagramsController');
 
 Route::controllers([
