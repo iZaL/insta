@@ -223,24 +223,16 @@ class InstagramsController extends Controller
         }
 
         foreach ($accounts as $username => $account) {
-//            if (trim(!(empty($account->pagination)) || !(is_null($account->pagination)) || !(isset($account->pagination)) || !($account->pagination == ''))) {
-
-            if(is_object($account)) {
-                if (isset($account->pagination) && !empty(get_object_vars($account->pagination))) {
-                    $response[$username]['pagination'] = $account->pagination->next_max_like_id;
-                }
-
+            if (!empty(get_object_vars($account->pagination))) {
+                $response[$username]['pagination'] = $account->pagination->next_max_like_id;
                 $response[$username]['username'] = $username;
-                if(!isset($account->data) && !empty($account->data)) {
-                    foreach ($account->data as $data) {
-                        $response[$username]['images'][] = [
-                            'id'   => $data->id,
-                            'url'  => $data->images->thumbnail->url,
-                            'user' => $data->user->username
-                        ];
-                    }
+                foreach ($account->data as $data) {
+                    $response[$username]['images'][] = [
+                        'id'   => $data->id,
+                        'url'  => $data->images->thumbnail->url,
+                        'user' => $data->user->username
+                    ];
                 }
-
             }
 
         }
