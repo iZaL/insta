@@ -66,7 +66,7 @@
                         $.each(account.images, function (i, media) {
                             template +=
                                     '<div id="div-like-' + media.id + '">' +
-                                    '<div class="col-md-6 p-bottom10">' +
+                                    '<div class="col-md-3 p-bottom10">' +
                                     '<a href="' + media.url + '" target="_blank">' +
                                     '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
                                     '</a>' +
@@ -127,7 +127,7 @@
                         $.each(account.images, function (i, media) {
                             mediaTemplate +=
                                     '<div id="div-like-' + media.id + '">' +
-                                    '<div class="col-md-6 p-bottom10">' +
+                                    '<div class="col-md-3 p-bottom10">' +
                                     '<a href="' + media.url + '" target="_blank">' +
                                     '<img src="' + media.url + '" class="img-responsive img-thumbnail">' +
                                     '</a>' +
@@ -314,12 +314,12 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div id="instagram-likes">
 
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div id="instagram-medias">
 
             </div>
