@@ -231,13 +231,16 @@ class InstagramsController extends Controller
                 }
 
                 $response[$username]['username'] = $username;
-                foreach ($account->data as $data) {
-                    $response[$username]['images'][] = [
-                        'id'   => $data->id,
-                        'url'  => $data->images->thumbnail->url,
-                        'user' => $data->user->username
-                    ];
+                if(!isset($account->data) && !empty($account->data)) {
+                    foreach ($account->data as $data) {
+                        $response[$username]['images'][] = [
+                            'id'   => $data->id,
+                            'url'  => $data->images->thumbnail->url,
+                            'user' => $data->user->username
+                        ];
+                    }
                 }
+
             }
 
         }
