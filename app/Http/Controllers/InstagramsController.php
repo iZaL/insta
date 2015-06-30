@@ -268,7 +268,7 @@ class InstagramsController extends Controller
                 $data = file_get_contents($url);
                 $account = json_decode($data);
             }
-            $response['pagination'] = isset($account->likePagination->next_max_like_id) ? $account->pagination->next_max_like_id : null;
+            $response['pagination'] = isset($account->pagination->next_max_like_id) ? $account->pagination->next_max_like_id : null;
             foreach ($account->data as $data) {
                 if ($data->type == 'image') {
                     $response['images'][] = [
