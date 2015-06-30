@@ -57,7 +57,7 @@ class InstagramsController extends Controller
 
         return view('instagrams.index')->with([
             'instagrams' => $instagrams,
-            'likes' => $likes
+            'likes'      => $likes
         ]);
     }
 
@@ -223,14 +223,15 @@ class InstagramsController extends Controller
         }
 
         foreach ($accounts as $username => $account) {
-            if(isset($account->pagination)) {
-                if (!empty(get_object_vars($account->pagination))) {
-                    $response[$username]['pagination'] = $account->pagination->next_max_like_id;
+            if (!empty(get_object_vars($account->pagination))) {
+                $response[$username]['pagination'] = $account->pagination->next_max_like_id;
+            } else {
+                if (!empty($account->data)) {
                     $response[$username]['username'] = $username;
                     foreach ($account->data as $data) {
                         $response[$username]['images'][] = [
-                            'id' => $data->id,
-                            'url' => $data->images->thumbnail->url,
+                            'id'   => $data->id,
+                            'url'  => $data->images->thumbnail->url,
                             'user' => $data->user->username
                         ];
                     }
@@ -260,10 +261,10 @@ class InstagramsController extends Controller
             }
             $response['pagination'] = isset($account->likePagination->next_max_like_id) ? $account->pagination->next_max_like_id : null;
             foreach ($account->data as $data) {
-                if($data->type == 'image') {
+                if ($data->type == 'image') {
                     $response['images'][] = [
-                        'id' => $data->id,
-                        'url' => $data->images->thumbnail->url,
+                        'id'   => $data->id,
+                        'url'  => $data->images->thumbnail->url,
                         'user' => $data->user->username
                     ];
                 }
@@ -297,11 +298,11 @@ class InstagramsController extends Controller
                 $response[$username]['pagination'] = null;
             }
             $response[$username]['username'] = $username;
-            if(isset($account->data)) {
+            if (isset($account->data)) {
                 foreach ($account->data as $data) {
                     $response[$username]['images'][] = [
-                        'id' => $data->id,
-                        'url' => $data->images->thumbnail->url,
+                        'id'   => $data->id,
+                        'url'  => $data->images->thumbnail->url,
                         'user' => $data->user->username
                     ];
                 }
@@ -320,7 +321,7 @@ class InstagramsController extends Controller
 
         if ($request->pagination) {
             if ($instagram->access_token) {
-                $url = 'https://api.instagram.com/v1/users/'.$instagram->client_id.'/media/recent/?access_token=' . $instagram->access_token;
+                $url = 'https://api.instagram.com/v1/users/' . $instagram->client_id . '/media/recent/?access_token=' . $instagram->access_token;
                 $url .= '&max_id=' . $request->get('pagination');
                 $url .= '&count=20';
                 $data = file_get_contents($url);
@@ -331,8 +332,8 @@ class InstagramsController extends Controller
 
             foreach ($account->data as $data) {
                 $response['images'][] = [
-                    'id' => $data->id,
-                    'url' => $data->images->thumbnail->url,
+                    'id'   => $data->id,
+                    'url'  => $data->images->thumbnail->url,
                     'user' => $data->user->username
                 ];
             }

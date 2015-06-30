@@ -43,7 +43,7 @@
 
 
         loadAllLikes();
-        loadAllMedias();
+//        loadAllMedias();
 
         function loadAllLikes() {
 //            $('#instagram-likes').html(
